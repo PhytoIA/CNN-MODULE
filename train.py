@@ -92,3 +92,31 @@ model.summary()
 # Model Training
 training_history = model.fit(x=training_set,validation_data=validation_set,epochs=10)
 
+# Model Evaluation on Training set
+train_loss, train_acc = model.evaluate(training_set)
+
+print(train_loss, train_acc)
+
+#Model on Validation set
+
+val_loss, val_acc = model.evaluate(validation_set)
+
+print(val_loss, val_acc)
+
+#Saving model
+model.save("trained_model.keras")
+training_history.history
+
+#Recording History in json
+import json
+with open("training_hist.json", "w") as f:
+    json.dump(training_history.history, f)
+
+epochs = [i for i in range (1,11)]
+plt.plot(epochs, training_history.history['accuracy'], color='red', label='Training Accuracy')
+plt.plot(epochs, training_history.history['val_accuracy'], color='blue', label='Validation Accuracy')
+plt.xlabel("No. of Epochs")
+plt.ylabel("Accuracy Result")
+plt.title("Visualization of Accuracy Result")
+plt.legend()
+plt.show()
