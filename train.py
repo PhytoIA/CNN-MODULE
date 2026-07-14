@@ -3,11 +3,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-
 training_set = tf.keras.utils.image_dataset_from_directory(
    'train',
    labels="inferred",
-   label_mode="categorical", #Binary (2 classes)
+   label_mode="categorical", #Classes (38)
    class_names=None,
    color_mode="rgb",
    batch_size=32,
@@ -20,7 +19,6 @@ training_set = tf.keras.utils.image_dataset_from_directory(
    follow_links=False,
    crop_to_aspect_ratio=False,
 )
-
 
 validation_set = tf.keras.utils.image_dataset_from_directory(
    'valid',
@@ -38,3 +36,59 @@ validation_set = tf.keras.utils.image_dataset_from_directory(
    follow_links=False,
    crop_to_aspect_ratio=False,
 )
+
+# Building Model
+
+# To avoid Overshooting
+# 1. Choose small learning rate default 0.001, we are taking 0.0001
+# 2. There may be chance of Underfitting, so increase number of neuron
+# 3. Add more Convolution layer to extract more feature from images, there may be possibilty that model unable to capture relevant feature or model is confusing due to lack of feature so feed with more feature
+
+print(tf.config.list_physical_devices())
+
+from tensorflow.keras.layers import Dense,Conv2D,MaxPool2D,Flatten,Dropout
+from tensorflow.keras.models import Sequential
+
+model = Sequential()
+
+## Building Convolution Layer
+
+model.add(Conv2D(filters=32,kernel_size=3,padding='same',activation='relu',input_shape=[128,128,3]))
+model.add(Conv2D(filters=32,kernel_size=3,activation='relu'))
+model.add(MaxPool2D(pool_size=2,strides=2))
+
+model.add(Conv2D(filters=64,kernel_size=3,padding='same',activation='relu'))
+model.add(Conv2D(filters=64,kernel_size=3,activation='relu'))
+model.add(MaxPool2D(pool_size=2,strides=2))
+
+model.add(Conv2D(filters=128,kernel_size=3,padding='same',activation='relu'))
+model.add(Conv2D(filters=128,kernel_size=3,activation='relu'))
+model.add(MaxPool2D(pool_size=2,strides=2))
+
+model.add(Conv2D(filters=256,kernel_size=3,padding='same',activation='relu'))
+model.add(Conv2D(filters=256,kernel_size=3,activation='relu'))
+model.add(MaxPool2D(pool_size=2,strides=2))
+
+model.add(Conv2D(filters=512,kernel_size=3,padding='same',activation='relu'))
+model.add(Conv2D(filters=512,kernel_size=3,activation='relu'))
+model.add(MaxPool2D(pool_size=2,strides=2))
+
+model.add(Dropout(0.25)) # To avoid Overfitting
+
+model.add(Flatten())
+
+model.add(Dense(units=1500,activation='relu')) # Neurons
+
+model.add(Dropout(0.4))
+
+#Output Layer
+model.add(Dense(units=38,activation='softmax'))
+
+model.compile(optimizer=tf.keras.optimizers.Adam(
+    learning_rate=0.0001),loss='categorical_crossentropy',metrics=['accuracy'])
+
+model.summary()
+
+# Model Training
+training_history = model.fit(x=training_set,validation_data=validation_set,epochs=10)
+
