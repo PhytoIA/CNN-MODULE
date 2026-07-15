@@ -98,7 +98,6 @@ train_loss, train_acc = model.evaluate(training_set)
 print(train_loss, train_acc)
 
 #Model on Validation set
-
 val_loss, val_acc = model.evaluate(validation_set)
 
 print(val_loss, val_acc)
@@ -112,6 +111,8 @@ import json
 with open("training_hist.json", "w") as f:
     json.dump(training_history.history, f)
 
+training_history.history['val_accuracy']
+
 epochs = [i for i in range (1,11)]
 plt.plot(epochs, training_history.history['accuracy'], color='red', label='Training Accuracy')
 plt.plot(epochs, training_history.history['val_accuracy'], color='blue', label='Validation Accuracy')
@@ -120,3 +121,35 @@ plt.ylabel("Accuracy Result")
 plt.title("Visualization of Accuracy Result")
 plt.legend()
 plt.show()
+
+# Some other metrics for model evaluation
+class_name = validation_set.class_names
+
+test_set = tf.keras.utils.image_dataset_from_directory(
+   'valid',
+   labels="inferred",
+   label_mode="categorical", #Classes (38)
+   class_names=None,
+   color_mode="rgb",
+   batch_size=32,
+   image_size=(128, 128),
+   shuffle=False,
+   seed=None,
+   validation_split=None,
+   subset=None,
+   interpolation="bilinear",
+   follow_links=False,
+   crop_to_aspect_ratio=False,
+)
+
+y_pred = model.predict(test_set)
+y_pred,y_pred.shape
+
+predicted_categories = tf.argmax(y_pred,axis=1)
+true_categories = tf.concat([y for x,y in test_set], axis=0)
+
+Y_true = tf.argmax(true_categories,axis=1)
+
+from sklearn.metrics import classification_report
+
+print(classification_report(Y_true, predicted_categories, target_names=class_name))
