@@ -3,15 +3,30 @@ import tensorflow as tf
 import numpy as np
 
 #Tensorflow Model Prediction
+# def model_prediction(test_image):
+#     model = tf.keras.models.load_model('trained_model.keras')
+#     image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
+#     input_arr = tf.keras.preprocessing.image.img_to_array(image)
+#     input_arr = np.array([input_arr]) # Convert single image to a batch
+#     prediction = model.predict(input_arr)
+#     result_index = np.argmax(prediction)
+#     return result_index
+
+#Tensorflow Model Prediction
 def model_prediction(test_image):
-    model = tf.keras.models.load_model('trained_model.keras')
-    image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
+    interpreter = tf.lite.Interpreter(model_path='model.tflite')
+    interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    image = tf.keras.preprocessing.image.load_img(test_image,target_size=(128,128))
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
-    input_arr = np.array([input_arr]) # Convert single image to a batch
-    prediction = model.predict(input_arr)
+    input_arr = np.array([input_arr])
+    interpreter.set_tensor(input_details[0]['index'],input_arr)
+    interpreter.invoke()
+    prediction = interpreter.get_tensor(output_details[0]['index'])
     result_index = np.argmax(prediction)
     return result_index
-
+    
 #Sidebar
 st.sidebar.title("Dashboard")
 app_mode = st.sidebar.selectbox("Select Page", ["Home", "About", "Disease Recognition"])
